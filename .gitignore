@@ -1,0 +1,8 @@
+./cache/
+
+compile_commands.json
+
+*.o
+poker
+*.mph
+tables.h

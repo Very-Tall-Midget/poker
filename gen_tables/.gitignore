@@ -1,0 +1,8 @@
+.cache/
+
+compile_commands.json
+
+*.mph
+tables.h
+*.o
+gen_tables
