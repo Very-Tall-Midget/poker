@@ -128,7 +128,7 @@ int test_all_5card(evaluator_t *evaluator) {
 }
 
 int test_equity(evaluator_t *evaluator) {
-    card_t cards[4] = {create_card(Ace, Spades), create_card(Ace, Clubs),
+    card_t cards[8] = {create_card(Ace, Spades), create_card(Ace, Clubs),
                        create_card(King, Spades), create_card(King, Clubs)};
     card_t community[4] = {create_card(Queen, Hearts), create_card(Two, Spades),
                            create_card(Ace, Diamonds),

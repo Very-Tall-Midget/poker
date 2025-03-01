@@ -33,24 +33,13 @@ evaluator_t *evaluator_load(const char *fileName) {
 
 void evaluator_destroy(evaluator_t *evaluator) { free(evaluator); }
 
-int32_t card_to_idx(card_t card) {
-    int32_t cardRank = (card >> 8) & 0xF;
-    int32_t cardSuit =
-        ((card >> 13) & 1) + ((card >> 14) & 1) * 2 + ((card >> 15) & 1) * 3;
-    return cardSuit + cardRank * 4 + 1;
-}
-
 int32_t evaluator_evaluate(evaluator_t *evaluator, card_t *cards,
                            size_t nCards) {
     assert(nCards == 5 || nCards == 6 || nCards == 7);
-    int32_t cardsConverted[7] = {0};
-    for (int i = 0; i < nCards; ++i) {
-        cardsConverted[i] = card_to_idx(cards[i]);
-    }
 
     int32_t rank = 53;
     for (int i = 0; i < nCards; ++i) {
-        rank = evaluator->handRanks[rank + cardsConverted[i]];
+        rank = evaluator->handRanks[rank + cards[i]];
     }
 
     if (nCards != 7)

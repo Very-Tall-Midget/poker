@@ -207,7 +207,7 @@ int main() {
     memset(ids, 0, sizeof(ids));
     memset(handRanks, 0, sizeof(handRanks));
 
-    printf("Generating card IDs\n");
+    printf("Generating card IDs...\n");
 
     for (int32_t i = 0; ids[i] || i == 0; ++i) {
         for (int32_t card = 1; card < 53; ++card) {
@@ -215,10 +215,9 @@ int main() {
             if (nCards < 7)
                 saveID(id);
         }
-        printf("\rID - %d", i);
     }
 
-    printf("\nSetting hand ranks\n");
+    printf("Setting hand ranks...\n");
 
     for (int32_t i = 0; ids[i] || i == 0; ++i) {
         for (int32_t card = 1; card < 53; ++card) {
@@ -235,11 +234,9 @@ int main() {
 
         if (nCards == 6 || nCards == 7)
             handRanks[i * 53 + 53] = eval(ids[i]);
-
-        printf("\rID - %d", i);
     }
 
-    printf("\nNumber of IDs = %d\nmaxHandRank = %d\n", numIDs, maxHandRank);
+    printf("Number of IDs = %d\nmaxHandRank = %d\n", numIDs, maxHandRank);
 
     int32_t count = 0, handTypes[10] = {0};
     for (int c0 = 1; c0 < 53; c0++) {
