@@ -15,7 +15,6 @@ typedef struct PrimeInfo {
     uint16_t rank;
 } primeinfo_t;
 
-const uint32_t rankPrimes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41};
 uint16_t flushTable[0x1F01] = {0}, uniquesTable[0x1F01] = {0};
 primeinfo_t primes[4888] = {0};
 

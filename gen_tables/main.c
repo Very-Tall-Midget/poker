@@ -6,7 +6,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "eval.h"
@@ -283,9 +282,9 @@ int main() {
         return 1;
     }
 
-    fwrite(handRanks, sizeof(handRanks), 1, fp);
-
-    printf("Done.\n");
+    uint64_t bytes = fwrite(handRanks, sizeof(handRanks[0]),
+                            sizeof(handRanks) / sizeof(handRanks[0]), fp);
+    printf("Wrote %ld bytes to handranks.dat\n", bytes);
 
     fclose(fp);
 

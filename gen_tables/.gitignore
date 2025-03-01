@@ -6,3 +6,4 @@ compile_commands.json
 tables.h
 *.o
 gen_tables
+handranks.dat

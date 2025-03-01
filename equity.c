@@ -34,6 +34,7 @@ equityinfo_t *equity_calc(evaluator_t *evaluator, card_t *hands, size_t nHands,
     uint32_t total = 0;
     card_t newCommunity[5] = {0};
     uint16_t *handRanks = calloc(nHands, sizeof(uint16_t));
+    card_t *card7Eval = malloc(7 * sizeof(card_t));
 
     if (community && nCommunity > 0)
         memcpy(newCommunity, community, nCommunity * sizeof(card_t));
@@ -118,15 +119,17 @@ equityinfo_t *equity_calc(evaluator_t *evaluator, card_t *hands, size_t nHands,
             __builtin_unreachable();
         }
 
-        for (int i = 0; i < nHands; ++i)
-            handRanks[i] = evaluator_evaluate_with_community(
-                evaluator, hands + (i * 2), newCommunity);
+        for (int i = 0; i < nHands; ++i) {
+            memcpy(card7Eval, hands + (i * 2), 2 * sizeof(card_t));
+            memcpy(card7Eval + 2, newCommunity, sizeof(newCommunity));
+            handRanks[i] = evaluator_evaluate(evaluator, card7Eval, 7);
+        }
 
         uint16_t best = handRanks[0];
         int winners = 1;
 
         for (int i = 1; i < nHands; ++i) {
-            if (handRanks[i] < best) {
+            if (handRanks[i] > best) {
                 best = handRanks[i];
                 winners = 1;
             } else if (handRanks[i] == best)
@@ -159,6 +162,7 @@ equityinfo_t *equity_calc(evaluator_t *evaluator, card_t *hands, size_t nHands,
     free(chops);
     free(handRanks);
     free(usedCards);
+    free(card7Eval);
 
     equityinfo_t *equity = malloc(sizeof(equityinfo_t));
     equity->total = total;

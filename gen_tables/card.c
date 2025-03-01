@@ -2,6 +2,9 @@
 
 #include "card.h"
 
+const uint32_t rankPrimes[13] = {2,  3,  5,  7,  11, 13, 17,
+                                 19, 23, 29, 31, 37, 41};
+
 card_t create_card(rank_t rank, suit_t suit) {
     uint32_t prime = rankPrimes[rank];
     uint32_t rankBit = 1 << rank;

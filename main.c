@@ -20,67 +20,75 @@ int test_flush(evaluator_t *evaluator) {
             evaluator,
             (card_t[]){create_card(Ace, Spades), create_card(Two, Spades),
                        create_card(Three, Spades), create_card(Four, Spades),
-                       create_card(Five, Spades)}) == 10);
+                       create_card(Five, Spades), create_card(Eight, Hearts),
+                       create_card(Nine, Diamonds)},
+            7) == 36865);
     test_assert(evaluator_evaluate(evaluator,
                                    (card_t[]){create_card(Ace, Spades),
                                               create_card(King, Spades),
                                               create_card(Ten, Spades),
                                               create_card(Queen, Spades),
-                                              create_card(Jack, Spades)}) == 1);
-    test_assert(
-        evaluator_evaluate(
-            evaluator,
-            (card_t[]){create_card(Ace, Spades), create_card(King, Spades),
-                       create_card(Nine, Spades), create_card(Queen, Spades),
-                       create_card(Jack, Spades)}) == 323);
+                                              create_card(Jack, Spades)},
+                                   5) == 36874);
+    test_assert(evaluator_evaluate(evaluator,
+                                   (card_t[]){create_card(Ace, Spades),
+                                              create_card(King, Spades),
+                                              create_card(Nine, Spades),
+                                              create_card(Queen, Spades),
+                                              create_card(Jack, Spades)},
+                                   5) == 25853);
 
     return 0;
 }
 
 int test_unique(evaluator_t *evaluator) {
-    test_assert(
-        evaluator_evaluate(
-            evaluator,
-            (card_t[]){create_card(Ten, Hearts), create_card(King, Spades),
-                       create_card(Nine, Clubs), create_card(Queen, Spades),
-                       create_card(Jack, Diamonds)}) == 1601);
-    test_assert(
-        evaluator_evaluate(
-            evaluator,
-            (card_t[]){create_card(Two, Hearts), create_card(Three, Spades),
-                       create_card(Seven, Clubs), create_card(Four, Spades),
-                       create_card(Five, Diamonds)}) == 7462);
-    test_assert(
-        evaluator_evaluate(
-            evaluator,
-            (card_t[]){create_card(Two, Hearts), create_card(Three, Diamonds),
-                       create_card(Five, Clubs), create_card(Four, Clubs),
-                       create_card(Eight, Spades)}) == 7458);
-    test_assert(
-        evaluator_evaluate(evaluator, (card_t[]){create_card(Ace, Hearts),
-                                                 create_card(Nine, Diamonds),
-                                                 create_card(King, Clubs),
-                                                 create_card(Queen, Clubs),
-                                                 create_card(Jack, Spades)}) ==
-        10 + 156 * 2 + 1277 + 858 * 2 + 10 + 2860 + 1);
+    test_assert(evaluator_evaluate(evaluator,
+                                   (card_t[]){create_card(Ten, Hearts),
+                                              create_card(King, Spades),
+                                              create_card(Nine, Clubs),
+                                              create_card(Queen, Spades),
+                                              create_card(Jack, Diamonds)},
+                                   5) == 20489);
+    test_assert(evaluator_evaluate(evaluator,
+                                   (card_t[]){create_card(Two, Hearts),
+                                              create_card(Three, Spades),
+                                              create_card(Seven, Clubs),
+                                              create_card(Four, Spades),
+                                              create_card(Five, Diamonds)},
+                                   5) == 4097);
+    test_assert(evaluator_evaluate(evaluator,
+                                   (card_t[]){create_card(Two, Hearts),
+                                              create_card(Three, Diamonds),
+                                              create_card(Five, Clubs),
+                                              create_card(Four, Clubs),
+                                              create_card(Eight, Spades)},
+                                   5) == 4101);
+    test_assert(evaluator_evaluate(evaluator,
+                                   (card_t[]){create_card(Ace, Hearts),
+                                              create_card(Nine, Diamonds),
+                                              create_card(King, Clubs),
+                                              create_card(Queen, Clubs),
+                                              create_card(Jack, Spades)},
+                                   5) == 5373);
 
     return 0;
 }
 
 int test_primes(evaluator_t *evaluator) {
-    test_assert(
-        evaluator_evaluate(
-            evaluator,
-            (card_t[]){create_card(Ace, Diamonds), create_card(Ace, Hearts),
-                       create_card(Ace, Clubs), create_card(Ace, Spades),
-                       create_card(King, Hearts)}) == 11);
-    test_assert(
-        evaluator_evaluate(evaluator, (card_t[]){create_card(Two, Diamonds),
-                                                 create_card(Five, Hearts),
-                                                 create_card(Two, Clubs),
-                                                 create_card(Four, Spades),
-                                                 create_card(Three, Hearts)}) ==
-        10 + 156 * 2 + 1277 + 858 * 2 + 10 + 2860);
+    test_assert(evaluator_evaluate(evaluator,
+                                   (card_t[]){create_card(Ace, Diamonds),
+                                              create_card(Ace, Hearts),
+                                              create_card(Ace, Clubs),
+                                              create_card(Ace, Spades),
+                                              create_card(King, Hearts)},
+                                   5) == 32924);
+    test_assert(evaluator_evaluate(evaluator,
+                                   (card_t[]){create_card(Two, Diamonds),
+                                              create_card(Five, Hearts),
+                                              create_card(Two, Clubs),
+                                              create_card(Four, Spades),
+                                              create_card(Three, Hearts)},
+                                   5) == 8193);
 
     return 0;
 }
@@ -102,7 +110,8 @@ int test_all_5card(evaluator_t *evaluator) {
                                                create_card(j / 4, j % 4),
                                                create_card(k / 4, k % 4),
                                                create_card(l / 4, l % 4),
-                                               create_card(m / 4, m % 4)}))
+                                               create_card(m / 4, m % 4)},
+                                    5))
                                 count += 1;
                             else
                                 invalid += 1;
@@ -128,9 +137,6 @@ int test_equity(evaluator_t *evaluator) {
     {
         equityinfo_t *equity = equity_calc(evaluator, cards, 2, NULL, 0);
 
-        test_assert(equity->equities[0].win < 0.83 &&
-                    equity->equities[0].win > 0.82);
-
         printf("Evaluated %u 7 card hands in %.2fs\n", equity->total,
                equity->time);
         for (int i = 0; i < 2; ++i) {
@@ -138,6 +144,9 @@ int test_equity(evaluator_t *evaluator) {
                    equity->equities[i].win * 100,
                    equity->equities[i].chop * 100);
         }
+
+        test_assert(equity->equities[0].win < 0.83 &&
+                    equity->equities[0].win > 0.82);
 
         equity_destroy(equity);
     }
@@ -145,8 +154,6 @@ int test_equity(evaluator_t *evaluator) {
     {
         equityinfo_t *equity = equity_calc(evaluator, cards, 2, community, 3);
 
-        test_assert(equity->equities[0].win > 0.98);
-
         printf("Evaluated %u 7 card hands in %.2fs\n", equity->total,
                equity->time);
         for (int i = 0; i < 2; ++i) {
@@ -154,6 +161,8 @@ int test_equity(evaluator_t *evaluator) {
                    equity->equities[i].win * 100,
                    equity->equities[i].chop * 100);
         }
+
+        test_assert(equity->equities[0].win > 0.98);
 
         equity_destroy(equity);
     }
@@ -161,9 +170,6 @@ int test_equity(evaluator_t *evaluator) {
     {
         equityinfo_t *equity = equity_calc(evaluator, cards, 2, community, 4);
 
-        test_assert(equity->equities[1].win > 0.022 &&
-                    equity->equities[1].win < 0.023);
-
         printf("Evaluated %u 7 card hands in %.2fs\n", equity->total,
                equity->time);
         for (int i = 0; i < 2; ++i) {
@@ -171,6 +177,9 @@ int test_equity(evaluator_t *evaluator) {
                    equity->equities[i].win * 100,
                    equity->equities[i].chop * 100);
         }
+
+        test_assert(equity->equities[1].win > 0.022 &&
+                    equity->equities[1].win < 0.023);
 
         equity_destroy(equity);
     }
@@ -189,7 +198,7 @@ const struct Test {
 const size_t nTests = sizeof(tests) / sizeof(struct Test);
 
 int main(int argc, char *argv[]) {
-    evaluator_t *evaluator = evaluator_load("hash.mph");
+    evaluator_t *evaluator = evaluator_load("handranks.dat");
     if (!evaluator)
         return 1;
 
