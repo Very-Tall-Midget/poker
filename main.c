@@ -104,14 +104,13 @@ int test_all_5card(evaluator_t *evaluator) {
                 for (uint32_t k = j + 1; k < 50; ++k)
                     for (uint32_t l = k + 1; l < 51; ++l)
                         for (uint32_t m = l + 1; m < 52; ++m)
-                            if (evaluator_evaluate(
-                                    evaluator,
-                                    (card_t[]){create_card(i / 4, i % 4),
-                                               create_card(j / 4, j % 4),
-                                               create_card(k / 4, k % 4),
-                                               create_card(l / 4, l % 4),
-                                               create_card(m / 4, m % 4)},
-                                    5))
+                            if (evaluator_evaluate(evaluator,
+                                                   (card_t[]){card_from_idx(i),
+                                                              card_from_idx(j),
+                                                              card_from_idx(k),
+                                                              card_from_idx(l),
+                                                              card_from_idx(m)},
+                                                   5))
                                 count += 1;
                             else
                                 invalid += 1;
@@ -127,8 +126,46 @@ int test_all_5card(evaluator_t *evaluator) {
     return 0;
 }
 
+int test_all_7card(evaluator_t *evaluator) {
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    uint64_t count = 0, invalid = 0;
+    for (uint32_t n = 0; n < 10; ++n)
+        for (uint32_t a = 0; a < 46; ++a)
+            for (uint32_t b = a + 1; b < 47; ++b)
+                for (uint32_t c = b + 1; c < 48; ++c)
+                    for (uint32_t d = c + 1; d < 49; ++d)
+                        for (uint32_t e = d + 1; e < 50; ++e)
+                            for (uint32_t f = e + 1; f < 51; ++f)
+                                for (uint32_t g = f + 1; g < 52; ++g)
+                                    if (evaluator_evaluate(
+                                            evaluator,
+                                            (card_t[]){card_from_idx(a),
+                                                       card_from_idx(b),
+                                                       card_from_idx(c),
+                                                       card_from_idx(d),
+                                                       card_from_idx(e),
+                                                       card_from_idx(f),
+                                                       card_from_idx(g)},
+                                            7))
+                                        count += 1;
+                                    else
+                                        invalid += 1;
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double time =
+        (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+    test_assert(invalid == 0);
+    printf("Evaluated %lu 7 card hands in %.2lfs (%.2lf hands per second)\n",
+           count, time, (double)count / time);
+
+    return 0;
+}
+
 int test_equity(evaluator_t *evaluator) {
-    card_t cards[8] = {create_card(Ace, Spades), create_card(Ace, Clubs),
+    card_t cards[4] = {create_card(Ace, Spades), create_card(Ace, Clubs),
                        create_card(King, Spades), create_card(King, Clubs)};
     card_t community[4] = {create_card(Queen, Hearts), create_card(Two, Spades),
                            create_card(Ace, Diamonds),
@@ -190,20 +227,19 @@ int test_equity(evaluator_t *evaluator) {
 const struct Test {
     const char *name;
     int (*func)(evaluator_t *);
-} tests[] = {{"flush", test_flush},
-             {"unique", test_unique},
-             {"primes", test_primes},
-             {"all_5card", test_all_5card},
-             {"equity", test_equity}};
+} tests[] = {{"flush", test_flush},         {"unique", test_unique},
+             {"primes", test_primes},       {"all_5card", test_all_5card},
+             {"all_7card", test_all_7card}, {"equity", test_equity}};
 const size_t nTests = sizeof(tests) / sizeof(struct Test);
 
 int main(int argc, char *argv[]) {
-    evaluator_t *evaluator = evaluator_load("handranks.dat");
-    if (!evaluator)
-        return 1;
 
     bool showUsage = true;
     if (argc == 3 && strcmp(argv[1], "--test") == 0) {
+        evaluator_t *evaluator = evaluator_load("handranks.dat");
+        if (!evaluator)
+            return 1;
+
         int failed = 0, success = 0;
         for (int i = 0; i < nTests; ++i) {
             if (strcmp(argv[2], tests[i].name) == 0 ||
@@ -221,6 +257,8 @@ int main(int argc, char *argv[]) {
         }
         if (!showUsage)
             printf("\n%d tests succeeded, %d tests failed\n", success, failed);
+
+        evaluator_destroy(evaluator);
     }
 
     if (showUsage) {
@@ -229,8 +267,6 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < nTests; ++i)
             printf("\t%s\n", tests[i].name);
     }
-
-    evaluator_destroy(evaluator);
 
     return 0;
 }
