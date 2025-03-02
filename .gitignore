@@ -6,3 +6,4 @@ compile_commands.json
 poker
 *.mph
 tables.h
+*.dat
