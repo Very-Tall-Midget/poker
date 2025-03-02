@@ -22,8 +22,6 @@ evaluator_t *evaluator_load(const char *fileName) {
     uint64_t objects = fread(
         evaluator->handRanks, sizeof(evaluator->handRanks[0]),
         sizeof(evaluator->handRanks) / sizeof(evaluator->handRanks[0]), fp);
-    printf("Read %ld bytes from %s\n",
-           objects * sizeof(evaluator->handRanks[0]), fileName);
     assert(objects ==
            sizeof(evaluator->handRanks) / sizeof(evaluator->handRanks[0]));
     fclose(fp);
