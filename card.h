@@ -39,5 +39,6 @@ card_t create_card(rank_t rank, suit_t suit);
 card_t card_from_idx(uint32_t idx);
 void card_two_from_idx(uint32_t idx, card_t *cards);
 void card_to_string(card_t card, char str[3]);
+card_t card_from_str(const char *str);
 
 #endif // CARD_H

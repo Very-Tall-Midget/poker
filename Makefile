@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Werror -std=c2x -pedantic
 TARGET = poker
-LIBS = -lm -lcmph
+LIBS = -lm
 
 .PHONY: release debug clean default
 

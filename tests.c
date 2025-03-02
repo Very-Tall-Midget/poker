@@ -289,10 +289,10 @@ const struct Test {
              {"rand_7card", test_7card_rand}, {"equity", test_equity}};
 const size_t nTests = sizeof(tests) / sizeof(struct Test);
 
-void print_tests() {
-    printf("Available tests:\n\tall\n");
+void print_tests(const char *fmt) {
+    printf(fmt, "all");
     for (int i = 0; i < nTests; ++i)
-        printf("\t%s\n", tests[i].name);
+        printf(fmt, tests[i].name);
 }
 
 int run_tests(int argc, char *argv[]) {

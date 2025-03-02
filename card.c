@@ -29,3 +29,19 @@ void card_to_string(card_t card, char str[3]) {
     str[1] = suits[CARD_SUIT(card)];
     str[2] = 0;
 }
+
+card_t card_from_str(const char *str) {
+    suit_t suit = -1;
+    rank_t rank = -1;
+    for (int i = 0; i < sizeof(ranks); ++i)
+        if (str[0] == ranks[i])
+            rank = i;
+
+    for (int i = 0; i < sizeof(suits); ++i)
+        if (str[1] == suits[i])
+            suit = i;
+
+    if (suit == -1 || rank == -1)
+        return 0;
+    return create_card(rank, suit);
+}
