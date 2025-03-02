@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define CARD_RANK(card) ((card - 1) / 4)
+#define CARD_SUIT(card) ((card - 1) % 4)
+
 /* Format:
  * 1-52 (inclusive)
  * 2s, 2h, 2d, 2c, ..., As, Ah, Ad, Ac
@@ -35,5 +38,6 @@ typedef enum Rank {
 card_t create_card(rank_t rank, suit_t suit);
 card_t card_from_idx(uint32_t idx);
 void card_two_from_idx(uint32_t idx, card_t *cards);
+void card_to_string(card_t card, char str[3]);
 
 #endif // CARD_H

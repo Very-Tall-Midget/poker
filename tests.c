@@ -1,17 +1,21 @@
 #define _POSIX_C_SOURCE 199309L
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include "card.h"
 #include "equity.h"
 #include "evaluator.h"
+#include "handrange.h"
 #include "tests.h"
 
 #define test_assert(expr)                                                      \
-    if (!(expr))                                                               \
-        return 1;
+    if (!(expr)) {                                                             \
+        printf("Test failed, file %s:%d\n", __FILE_NAME__, __LINE__);          \
+        return 1;                                                              \
+    }
 
 int test_flush(evaluator_t *evaluator) {
     test_assert(
@@ -130,27 +134,58 @@ int test_all_7card(evaluator_t *evaluator) {
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     uint64_t count = 0, invalid = 0;
-    for (uint32_t n = 0; n < 10; ++n)
-        for (uint32_t a = 0; a < 46; ++a)
-            for (uint32_t b = a + 1; b < 47; ++b)
-                for (uint32_t c = b + 1; c < 48; ++c)
-                    for (uint32_t d = c + 1; d < 49; ++d)
-                        for (uint32_t e = d + 1; e < 50; ++e)
-                            for (uint32_t f = e + 1; f < 51; ++f)
-                                for (uint32_t g = f + 1; g < 52; ++g)
-                                    if (evaluator_evaluate(
-                                            evaluator,
-                                            (card_t[]){card_from_idx(a),
-                                                       card_from_idx(b),
-                                                       card_from_idx(c),
-                                                       card_from_idx(d),
-                                                       card_from_idx(e),
-                                                       card_from_idx(f),
-                                                       card_from_idx(g)},
-                                            7))
-                                        count += 1;
-                                    else
-                                        invalid += 1;
+    for (uint32_t a = 0; a < 46; ++a)
+        for (uint32_t b = a + 1; b < 47; ++b)
+            for (uint32_t c = b + 1; c < 48; ++c)
+                for (uint32_t d = c + 1; d < 49; ++d)
+                    for (uint32_t e = d + 1; e < 50; ++e)
+                        for (uint32_t f = e + 1; f < 51; ++f)
+                            for (uint32_t g = f + 1; g < 52; ++g)
+                                if (evaluator_evaluate(
+                                        evaluator,
+                                        (card_t[]){
+                                            card_from_idx(a), card_from_idx(b),
+                                            card_from_idx(c), card_from_idx(d),
+                                            card_from_idx(e), card_from_idx(f),
+                                            card_from_idx(g)},
+                                        7))
+                                    count += 1;
+                                else
+                                    invalid += 1;
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    double time =
+        (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+
+    test_assert(invalid == 0);
+    printf("Evaluated %lu 7 card hands in %.2lfs (%.2lf hands per second)\n",
+           count, time, (double)count / time);
+
+    return 0;
+}
+
+#define RANDOM(min, max) (rand() % ((max) - (min)) + (min))
+
+int test_7card_rand(evaluator_t *evaluator) {
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+    uint64_t count = 0, invalid = 0;
+    for (; count < 10000000; ++count) {
+        uint32_t a = RANDOM(0, 46), b = RANDOM(a + 1, 47),
+                 c = RANDOM(b + 1, 48), d = RANDOM(c + 1, 49),
+                 e = RANDOM(d + 1, 50), f = RANDOM(e + 1, 51),
+                 g = RANDOM(f + 1, 52);
+        if (evaluator_evaluate(evaluator,
+                               (card_t[]){card_from_idx(a), card_from_idx(b),
+                                          card_from_idx(c), card_from_idx(d),
+                                          card_from_idx(e), card_from_idx(f),
+                                          card_from_idx(g)},
+                               7))
+            count += 1;
+        else
+            invalid += 1;
+    }
 
     clock_gettime(CLOCK_MONOTONIC, &end);
     double time =
@@ -223,12 +258,35 @@ int test_equity(evaluator_t *evaluator) {
     return 0;
 }
 
+#define TEST_HANDRANGE_LENGTH(str, len)                                        \
+    {                                                                          \
+        handrange_t *handRange = handrange_create(str);                        \
+        test_assert(handRange->size == (len));                                 \
+        handrange_destroy(handRange);                                          \
+    }
+
+int test_handrange(evaluator_t *) {
+    TEST_HANDRANGE_LENGTH("AA 55 77 27", 6 * 3 + 16);
+    TEST_HANDRANGE_LENGTH("AA-22", 6 * 13);
+    TEST_HANDRANGE_LENGTH("AA", 6);
+    TEST_HANDRANGE_LENGTH("AK", 16);
+    TEST_HANDRANGE_LENGTH("KK+", 6 * 2 + 12 * 16);
+    TEST_HANDRANGE_LENGTH("38-", 6 * 2 + 16 * 11);
+    TEST_HANDRANGE_LENGTH("AKs", 4);
+    TEST_HANDRANGE_LENGTH("AQs+", 4 * 2);
+    TEST_HANDRANGE_LENGTH("AKo", 12);
+    TEST_HANDRANGE_LENGTH("AQo+", 12 * 2 + 6);
+
+    return 0;
+}
+
 const struct Test {
     const char *name;
     int (*func)(evaluator_t *);
-} tests[] = {{"flush", test_flush},         {"unique", test_unique},
-             {"primes", test_primes},       {"all_5card", test_all_5card},
-             {"all_7card", test_all_7card}, {"equity", test_equity}};
+} tests[] = {{"flush", test_flush},           {"unique", test_unique},
+             {"primes", test_primes},         {"handrange", test_handrange},
+             {"all_5card", test_all_5card},   {"all_7card", test_all_7card},
+             {"rand_7card", test_7card_rand}, {"equity", test_equity}};
 const size_t nTests = sizeof(tests) / sizeof(struct Test);
 
 void print_tests() {
@@ -244,7 +302,7 @@ int run_tests(int argc, char *argv[]) {
         return 0;
     }
 
-    int failed = 0, success = 0;
+    int failed = 0, succeeded = 0;
     for (int i = 0; i < nTests; ++i) {
         if (strcmp(argv[2], tests[i].name) == 0 ||
             strcmp(argv[2], "all") == 0) {
@@ -254,12 +312,15 @@ int run_tests(int argc, char *argv[]) {
                 failed++;
             } else {
                 printf("Test %s succeeded\n", tests[i].name);
-                success++;
+                succeeded++;
             }
         }
     }
-    if (failed == 0 && success == 0)
+
+    if (failed == 0 && succeeded == 0)
         return 1;
+
+    printf("\n%d succeeded, %d failed\n", succeeded, failed);
 
     evaluator_destroy(evaluator);
 
