@@ -26,8 +26,8 @@ void calc_and_print_equity(evaluator_t *evaluator, card_t *hands, size_t nHands,
         uint32_t outs = equities[i].winOuts + equities[i].chopOuts;
         if (outs <= 10 && outs != 0) {
             printf(", Outs: %u", outs);
-            if (equities[i].winOuts != 0 || equities[i].chopOuts != 0)
-                printf(" (%u win / %u out)", equities[i].winOuts,
+            if (equities[i].winOuts != 0 && equities[i].chopOuts != 0)
+                printf(" (%u win / %u chop)", equities[i].winOuts,
                        equities[i].chopOuts);
         }
         printf("\n");
@@ -216,8 +216,8 @@ int equity() {
         card_to_string(hands[i * 2], handStr);
         card_to_string(hands[i * 2 + 1], handStr + 3);
         handStr[2] = ' ';
-        printf("\tPlayer %d: %s (%s)\n", i + 1, handStr,
-               handrank_to_str(ranks[i]));
+        printf("\tPlayer %d: %s (%s %X)\n", i + 1, handStr,
+               handrank_to_str(ranks[i]), ranks[i]);
         if (ranks[i] > bestRank) {
             bestRank = ranks[i];
             winners = 1;
