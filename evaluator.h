@@ -5,11 +5,11 @@
 
 #include "card.h"
 
-typedef struct Evaluator {
-    int32_t handRanks[32487834];
-} evaluator_t;
-
 typedef int32_t handrank_t;
+
+typedef struct Evaluator {
+    handrank_t handRanks[32487834];
+} evaluator_t;
 
 evaluator_t *evaluator_load(const char *fileName);
 void evaluator_destroy(evaluator_t *evaluator);

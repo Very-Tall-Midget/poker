@@ -254,7 +254,87 @@ int equity() {
     return 0;
 }
 
+int range_equity() {
+    evaluator_t *evaluator = evaluator_load("handranks.dat");
+    if (!evaluator)
+        return 1;
+
+    handrange_t *handRange1 = handrange_create("AA");
+    if (!handRange1) {
+        handrange_destroy(handRange1);
+        evaluator_destroy(evaluator);
+        return 1;
+    }
+    handrange_t *handRange2 = handrange_create("AA-22");
+    if (!handRange2) {
+        handrange_destroy(handRange1);
+        handrange_destroy(handRange2);
+        evaluator_destroy(evaluator);
+        return 1;
+    }
+
+    card_t hands[4] = {0};
+    equityinfo_t equityInfo = {0};
+    equityInfo.equities = calloc(2, sizeof(handequity_t));
+
+    for (int a = 0; a < handRange1->size; ++a)
+        for (int b = 0; b < handRange2->size; ++b) {
+            memcpy(hands, handrange_get(handRange1, a), sizeof(card_t) * 2);
+            memcpy(hands + 2, handrange_get(handRange2, b), sizeof(card_t) * 2);
+
+            bool duplicate = false;
+            for (int i = 0; i < 4 - 1; ++i)
+                for (int j = i + 1; j < 4; ++j)
+                    if (hands[i] == hands[j]) {
+                        duplicate = true;
+                        break;
+                    }
+
+            if (duplicate)
+                continue;
+
+            equityinfo_t *tempEquity =
+                equity_calc(evaluator, hands, 2, NULL, 0);
+
+            equityInfo.total += tempEquity->total;
+            equityInfo.time += tempEquity->time;
+
+            for (int i = 0; i < 2; ++i) {
+                equityInfo.equities[i].winOuts +=
+                    tempEquity->equities[i].winOuts;
+                equityInfo.equities[i].chopOuts +=
+                    tempEquity->equities[i].chopOuts;
+            }
+
+            equity_destroy(tempEquity);
+        }
+
+    for (int i = 0; i < 2; ++i) {
+        equityInfo.equities[i].win =
+            (float)((double)equityInfo.equities[i].winOuts /
+                    (double)equityInfo.total);
+        equityInfo.equities[i].chop =
+            (float)((double)equityInfo.equities[i].chopOuts /
+                    (double)equityInfo.total);
+    }
+
+    printf("Time: %.2fs, total: %u\n", equityInfo.time, equityInfo.total);
+    for (int i = 0; i < 2; ++i) {
+        printf("Hand %d: Win: %.2f, Chop: %.2f\n", i + 1,
+               equityInfo.equities[i].win * 100.0f,
+               equityInfo.equities[i].chop * 100.0f);
+    }
+
+    free(equityInfo.equities);
+    evaluator_destroy(evaluator);
+    handrange_destroy(handRange1);
+    handrange_destroy(handRange2);
+
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
+    /*return range_equity();*/
 
     bool showUsage = true;
     if (argc == 3 && strcmp(argv[1], "test") == 0)

@@ -35,7 +35,7 @@ handrank_t evaluator_evaluate(evaluator_t *evaluator, card_t *cards,
                               size_t nCards) {
     assert(nCards == 5 || nCards == 6 || nCards == 7);
 
-    int32_t rank = 53;
+    handrank_t rank = 53;
     for (int i = 0; i < nCards; ++i) {
         rank = evaluator->handRanks[rank + cards[i]];
     }
@@ -46,11 +46,11 @@ handrank_t evaluator_evaluate(evaluator_t *evaluator, card_t *cards,
     return rank;
 }
 
-const char *handRanks[] = {"impossible",    "High Card",       "One Pair",
-                           "Two Pair",      "Three of a Kind", "Straight",
-                           "Flush",         "Full House",      "Four of a Kind",
-                           "Straight Flush"};
+const char *handRanksStr[] = {
+    "impossible",      "High Card",     "One Pair", "Two Pair",
+    "Three of a Kind", "Straight",      "Flush",    "Full House",
+    "Four of a Kind",  "Straight Flush"};
 
 const char *handrank_to_str(handrank_t handRank) {
-    return handRanks[handRank >> 12];
+    return handRanksStr[handRank >> 12];
 }
