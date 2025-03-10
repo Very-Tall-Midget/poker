@@ -208,7 +208,7 @@ int test_equity(evaluator_t *evaluator) {
     {
         equityinfo_t *equity = equity_calc(evaluator, cards, 2, NULL, 0);
 
-        printf("Evaluated %u 7 card hands in %.2fs\n", equity->total,
+        printf("Evaluated %lu 7 card hands in %.2fs\n", equity->total,
                equity->time);
         for (int i = 0; i < 2; ++i) {
             printf("Hand %d: win %.2f%%, chop %.2f%%\n", i + 1,
@@ -225,7 +225,7 @@ int test_equity(evaluator_t *evaluator) {
     {
         equityinfo_t *equity = equity_calc(evaluator, cards, 2, community, 3);
 
-        printf("Evaluated %u 7 card hands in %.2fs\n", equity->total,
+        printf("Evaluated %lu 7 card hands in %.2fs\n", equity->total,
                equity->time);
         for (int i = 0; i < 2; ++i) {
             printf("Hand %d: win %.2f%%, chop %.2f%%\n", i + 1,
@@ -241,7 +241,7 @@ int test_equity(evaluator_t *evaluator) {
     {
         equityinfo_t *equity = equity_calc(evaluator, cards, 2, community, 4);
 
-        printf("Evaluated %u 7 card hands in %.2fs\n", equity->total,
+        printf("Evaluated %lu 7 card hands in %.2fs\n", equity->total,
                equity->time);
         for (int i = 0; i < 2; ++i) {
             printf("Hand %d: win %.2f%%, chop %.2f%%\n", i + 1,

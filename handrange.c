@@ -237,6 +237,9 @@ handrange_t *handrange_create(char *range) {
         }
     }
 
+    if (handRange->size == 0)
+        return handRange;
+
     qsort(handRange->cards, handRange->size, sizeof(card_t) * 2,
           compare_2_cards);
 

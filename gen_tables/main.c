@@ -280,7 +280,8 @@ int main() {
     }
 
     uint64_t bytes = fwrite(handRanks, sizeof(handRanks[0]),
-                            sizeof(handRanks) / sizeof(handRanks[0]), fp);
+                            sizeof(handRanks) / sizeof(handRanks[0]), fp) *
+                     sizeof(handRanks[0]);
     printf("Wrote %ld bytes to handranks.dat\n", bytes);
 
     fclose(fp);

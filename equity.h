@@ -9,11 +9,11 @@
 
 typedef struct HandEquity {
     float win, chop;
-    uint32_t winOuts, chopOuts;
+    uint64_t winOuts, chopOuts;
 } handequity_t;
 
 typedef struct EquityInfo {
-    uint32_t total;
+    uint64_t total;
     float time;
     handequity_t *equities;
 } equityinfo_t;

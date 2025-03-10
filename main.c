@@ -10,12 +10,31 @@
 #include "handrange.h"
 #include "tests.h"
 
+char *format_time(double time) {
+    char *str = calloc(11, sizeof(char));
+    const char *prefix[] = {"s", "ms", "us", "ns", "ps"};
+
+    int i = 0;
+    for (; i < 5; ++i) {
+        if (time < 1.0f)
+            time *= 1000.0f;
+        else
+            break;
+    }
+
+    sprintf(str, "%.2f%s", time, prefix[i]);
+
+    return str;
+}
+
 void calc_and_print_equity(evaluator_t *evaluator, card_t *hands, size_t nHands,
                            card_t *community, size_t nCommunity) {
     equityinfo_t *equity =
         equity_calc(evaluator, hands, nHands, community, nCommunity);
 
-    printf("Analysed %u possibilities in %.2fs\n", equity->total, equity->time);
+    char *timeStr = format_time(equity->time);
+    printf("Analysed %lu possibilities in %s\n", equity->total, timeStr);
+    free(timeStr);
 
     handequity_t *equities = equity->equities;
     for (int i = 0; i < nHands; ++i) {
@@ -27,7 +46,7 @@ void calc_and_print_equity(evaluator_t *evaluator, card_t *hands, size_t nHands,
         if (outs <= 10 && outs != 0) {
             printf(", Outs: %u", outs);
             if (equities[i].winOuts != 0 && equities[i].chopOuts != 0)
-                printf(" (%u win / %u chop)", equities[i].winOuts,
+                printf(" (%lu win / %lu chop)", equities[i].winOuts,
                        equities[i].chopOuts);
         }
         printf("\n");
@@ -129,6 +148,8 @@ int equity() {
 
         if (!failed)
             break;
+
+        memset(community, 0, sizeof(community));
     }
 
     calc_and_print_equity(evaluator, hands, nHands, community, 3);
@@ -166,6 +187,8 @@ int equity() {
 
         if (!duplicate)
             break;
+
+        community[3] = 0;
     }
 
     calc_and_print_equity(evaluator, hands, nHands, community, 4);
@@ -203,6 +226,8 @@ int equity() {
 
         if (!duplicate)
             break;
+
+        community[4] = 0;
     }
 
     printf("Hands:\n");
@@ -259,27 +284,43 @@ int range_equity() {
     if (!evaluator)
         return 1;
 
-    handrange_t *handRange1 = handrange_create("AA");
-    if (!handRange1) {
-        handrange_destroy(handRange1);
+    printf("Enter range 1: ");
+    char range[30];
+    if (fgets(range, 30, stdin) == NULL) {
+        printf("Failed to read stdin\n");
         evaluator_destroy(evaluator);
         return 1;
     }
-    handrange_t *handRange2 = handrange_create("AA-22");
-    if (!handRange2) {
+
+    handrange_t *handRange1 = handrange_create(range);
+    if (!handRange1 || handRange1->size == 0) {
+        printf("Invalid range\n");
+        evaluator_destroy(evaluator);
+        return 1;
+    }
+
+    printf("Enter range 2: ");
+    memset(range, 0, sizeof(range));
+    if (fgets(range, 30, stdin) == NULL) {
+        printf("Failed to read stdin\n");
+        evaluator_destroy(evaluator);
+        return 1;
+    }
+    handrange_t *handRange2 = handrange_create(range);
+    if (!handRange2 || handRange2->size == 0) {
+        printf("Invalid range\n");
         handrange_destroy(handRange1);
-        handrange_destroy(handRange2);
         evaluator_destroy(evaluator);
         return 1;
     }
 
     card_t hands[4] = {0};
-    equityinfo_t equityInfo = {0};
-    equityInfo.equities = calloc(2, sizeof(handequity_t));
+    equityinfo_t equity = {0};
+    equity.equities = calloc(2, sizeof(handequity_t));
 
-    for (int a = 0; a < handRange1->size; ++a)
+    for (int a = 0; a < handRange1->size; ++a) {
+        memcpy(hands, handrange_get(handRange1, a), sizeof(card_t) * 2);
         for (int b = 0; b < handRange2->size; ++b) {
-            memcpy(hands, handrange_get(handRange1, a), sizeof(card_t) * 2);
             memcpy(hands + 2, handrange_get(handRange2, b), sizeof(card_t) * 2);
 
             bool duplicate = false;
@@ -296,36 +337,38 @@ int range_equity() {
             equityinfo_t *tempEquity =
                 equity_calc(evaluator, hands, 2, NULL, 0);
 
-            equityInfo.total += tempEquity->total;
-            equityInfo.time += tempEquity->time;
+            equity.total += tempEquity->total;
+            equity.time += tempEquity->time;
 
             for (int i = 0; i < 2; ++i) {
-                equityInfo.equities[i].winOuts +=
-                    tempEquity->equities[i].winOuts;
-                equityInfo.equities[i].chopOuts +=
-                    tempEquity->equities[i].chopOuts;
+                equity.equities[i].winOuts += tempEquity->equities[i].winOuts;
+                equity.equities[i].chopOuts += tempEquity->equities[i].chopOuts;
             }
 
             equity_destroy(tempEquity);
         }
 
-    for (int i = 0; i < 2; ++i) {
-        equityInfo.equities[i].win =
-            (float)((double)equityInfo.equities[i].winOuts /
-                    (double)equityInfo.total);
-        equityInfo.equities[i].chop =
-            (float)((double)equityInfo.equities[i].chopOuts /
-                    (double)equityInfo.total);
+        printf(
+            "\r%.2lf%% %.2lf%%",
+            (double)equity.equities[0].winOuts / (double)equity.total * 100.0f,
+            (double)equity.equities[1].winOuts / (double)equity.total * 100.0f);
+        fflush(stdout);
     }
 
-    printf("Time: %.2fs, total: %u\n", equityInfo.time, equityInfo.total);
+    char *timeStr = format_time(equity.time);
+    printf("\rTime: %s, total: %lu\n", timeStr, equity.total);
+    free(timeStr);
     for (int i = 0; i < 2; ++i) {
+        equity.equities[i].win =
+            (double)equity.equities[i].winOuts / (double)equity.total;
+        equity.equities[i].chop =
+            (double)equity.equities[i].chopOuts / (double)equity.total;
         printf("Hand %d: Win: %.2f, Chop: %.2f\n", i + 1,
-               equityInfo.equities[i].win * 100.0f,
-               equityInfo.equities[i].chop * 100.0f);
+               equity.equities[i].win * 100.0f,
+               equity.equities[i].chop * 100.0f);
     }
 
-    free(equityInfo.equities);
+    free(equity.equities);
     evaluator_destroy(evaluator);
     handrange_destroy(handRange1);
     handrange_destroy(handRange2);
@@ -334,8 +377,6 @@ int range_equity() {
 }
 
 int main(int argc, char *argv[]) {
-    /*return range_equity();*/
-
     bool showUsage = true;
     if (argc == 3 && strcmp(argv[1], "test") == 0)
         showUsage = run_tests(argc, argv) != 0;
@@ -358,6 +399,9 @@ int main(int argc, char *argv[]) {
 
         handrange_destroy(handRange);
     }
+
+    if (argc == 2 && strcmp(argv[1], "equity-range") == 0)
+        return range_equity();
 
     if (argc == 2 && strcmp(argv[1], "equity") == 0) {
         showUsage = false;

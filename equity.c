@@ -70,15 +70,15 @@ equityinfo_t *equity_calc(evaluator_t *evaluator, card_t *hands, size_t nHands,
                           card_t *community, size_t nCommunity) {
     assert(nCommunity == 0 || nCommunity == 3 || nCommunity == 4);
 
+    struct timespec start, end;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     size_t nUsedCards = nHands * 2 + nCommunity;
     card_t usedCards[nUsedCards];
     memcpy(usedCards, hands, sizeof(card_t) * nHands * 2);
     if (community)
         memcpy(usedCards + (nHands * 2), community,
                sizeof(card_t) * nCommunity);
-
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC, &start);
 
     handrank_t handRanks[nHands];
 
@@ -100,9 +100,9 @@ equityinfo_t *equity_calc(evaluator_t *evaluator, card_t *hands, size_t nHands,
 
     for (int i = 0; i < nHands; ++i) {
         equity->equities[i].win =
-            (float)equity->equities[i].winOuts / (float)equity->total;
+            (double)equity->equities[i].winOuts / (double)equity->total;
         equity->equities[i].chop =
-            (float)equity->equities[i].chopOuts / (float)equity->total;
+            (double)equity->equities[i].chopOuts / (double)equity->total;
     }
 
     clock_gettime(CLOCK_MONOTONIC, &end);
