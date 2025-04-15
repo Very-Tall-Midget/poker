@@ -1,7 +1,7 @@
-#include <cmph.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "card.h"
@@ -241,8 +241,10 @@ int equity() {
         card_to_string(hands[i * 2], handStr);
         card_to_string(hands[i * 2 + 1], handStr + 3);
         handStr[2] = ' ';
-        printf("\tPlayer %d: %s (%s %X)\n", i + 1, handStr,
-               handrank_to_str(ranks[i]), ranks[i]);
+        char *handRankStr = handrank_to_str(ranks[i]);
+        printf("\tPlayer %d: %s (%s %X)\n", i + 1, handStr, handRankStr,
+               ranks[i]);
+        free(handRankStr);
         if (ranks[i] > bestRank) {
             bestRank = ranks[i];
             winners = 1;
@@ -258,7 +260,7 @@ int equity() {
     }
     printf("\n");
 
-    const char *rankStr = handrank_to_str(bestRank);
+    char *rankStr = handrank_to_str(bestRank);
     if (winners > 1) {
         printf("Chop (%s) between:\n", rankStr);
     }
@@ -274,6 +276,7 @@ int equity() {
 
     free(ranks);
     free(hands);
+    free(rankStr);
     evaluator_destroy(evaluator);
 
     return 0;

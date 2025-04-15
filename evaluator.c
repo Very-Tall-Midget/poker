@@ -51,6 +51,65 @@ const char *handRanksStr[] = {
     "Three of a Kind", "Straight",      "Flush",    "Full House",
     "Four of a Kind",  "Straight Flush"};
 
-const char *handrank_to_str(handrank_t handRank) {
-    return handRanksStr[handRank >> 12];
+const char *cardRanks[] = {"Deuce", "Three", "Four", "Five", "Six",
+                           "Seven", "Eight", "Nine", "Ten",  "Jack",
+                           "Queen", "King",  "Ace"};
+const char *cardRanksPlural[] = {"Deuces", "Threes", "Fours", "Fives", "Sixes",
+                                 "Sevens", "Eights", "Nines", "Tens",  "Jacks",
+                                 "Queens", "Kings",  "Aces"};
+
+char *handrank_to_str(handrank_t handRank) {
+    char *out = calloc(100, sizeof(char));
+    const char *rankName = handRanksStr[handRank >> 12];
+    sprintf(out, "%s, ", rankName);
+
+    handrank_t lower = handRank & 0xFFF;
+    switch (handRank >> 12) {
+    // Straight and straight flush
+    case 5:
+    case 9: {
+        rank_t high = Five + (lower - 1);
+        if (high == Ace)
+            sprintf(out, "Royal Flush");
+        else {
+            if (high == Five)
+                sprintf(out + strlen(out), "Ace to Five");
+            else
+                sprintf(out + strlen(out), "%s to %s", cardRanks[high - 4],
+                        cardRanks[high]);
+        }
+    } break;
+    // Four of a kind and full house
+    case 7:
+    case 8: {
+        rank_t quad = Two, kicker = Three;
+        for (handrank_t i = 1; i != lower; ++i) {
+            kicker++;
+            if (quad == kicker)
+                kicker++;
+            if (kicker > Ace) {
+                kicker = Two;
+                quad++;
+            }
+        }
+
+        if (handRank >> 12 == 8)
+            sprintf(out + strlen(out), "%s", cardRanksPlural[quad]);
+        else
+            sprintf(out + strlen(out), "%s full of %s", cardRanksPlural[quad],
+                    cardRanksPlural[kicker]);
+    } break;
+    // Trips
+    case 4: {
+        rank_t trip = lower / (11 * (11 + 1) / 2);
+        sprintf(out + strlen(out), "%s", cardRanksPlural[trip]);
+    } break;
+    // TODO: One pair, high card, two pair, flush
+    // Default just remove the comma
+    default:
+        out[strlen(out) - 2] = 0;
+        break;
+    }
+
+    return out;
 }

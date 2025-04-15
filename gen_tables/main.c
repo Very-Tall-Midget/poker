@@ -269,6 +269,8 @@ int main() {
         printf("%16s = %d\n", handRankStr[i], handTypes[i]);
     }
 
+    assert(handTypes[0] == 0);
+
     printf("Total hands = %d\n", count);
 
     printf("Saving to handranks.dat...\n");

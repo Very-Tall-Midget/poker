@@ -16,6 +16,6 @@ void evaluator_destroy(evaluator_t *evaluator);
 handrank_t evaluator_evaluate(evaluator_t *evaluator, card_t *cards,
                               size_t nCards);
 
-const char *handrank_to_str(handrank_t handRank);
+char *handrank_to_str(handrank_t handRank);
 
 #endif // EVALUATOR_H

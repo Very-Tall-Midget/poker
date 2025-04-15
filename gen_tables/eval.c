@@ -1,6 +1,4 @@
 #include <assert.h>
-#include <cmph.h>
-#include <cmph_types.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
